@@ -5,7 +5,7 @@ import { getDatabase, ref, get, child } from "firebase/database";
 import SliderClient from "./components/SliderClient";
 import Header from "./components/Header";
 
-// ✅ Ganti <head> dengan metadata resmi Next.js
+// ✅ Metadata resmi Next.js
 export const metadata = {
   title: "Liputan Binongko - Berita Terbaru",
   description: "Berita terbaru dan populer dari Liputan Binongko.",
@@ -26,6 +26,9 @@ export const metadata = {
     type: "website",
   },
 };
+
+// ✅ Revalidate untuk ISR
+export const revalidate = 10; // rebuild halaman tiap 10 detik
 
 // ✅ Konfigurasi Firebase
 const firebaseConfig = {

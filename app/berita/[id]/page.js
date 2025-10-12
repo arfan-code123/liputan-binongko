@@ -1,7 +1,7 @@
-// app/berita/[id]/page.js
 import { notFound } from "next/navigation";
 import { ref, get, set } from "firebase/database";
 import { getDB } from "../../../lib/firebase";
+import Header from "../../components/Header";
 import ShareButtons from "../../../components/ShareButtons";
 
 // 🔹 Format paragraf agar rapi
@@ -69,13 +69,11 @@ export default async function BeritaDetailPage({ params }) {
   const beritaRef = ref(db, "berita/" + id);
   const snapshot = await get(beritaRef);
 
-  if (!snapshot.exists()) {
-    notFound();
-  }
+  if (!snapshot.exists()) notFound();
 
   const data = snapshot.val();
 
-  // ✅ Update jumlah views (sementara di server)
+  // ✅ Update jumlah views
   const currentViews = data.views || 0;
   await set(ref(db, `berita/${id}/views`), currentViews + 1);
 
@@ -99,80 +97,77 @@ export default async function BeritaDetailPage({ params }) {
     .slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-white text-black">
-      <header className="p-4 border-b border-gray-300">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">
-            <a href="/">Liputan Binongko</a>
-          </h1>
-          <nav className="flex gap-4">
-            <a href="/">Beranda</a>
-            <a href="/profil">Profil</a>
-            <a href="/kontak">Kontak</a>
-            <a href="/tentang">Tentang</a>
-          </nav>
-        </div>
-      </header>
+    <>
+      {/* ✅ Header Reusable */}
+      <Header />
 
-      <main className="max-w-3xl mx-auto p-4">
-        <section id="detail-berita" className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">{data.judul}</h2>
-          <div className="text-sm text-gray-600 mb-4">
+      <main>
+        {/* 🔹 Isi Berita */}
+        <section id="berita-detail" className="berita-detail">
+          {/* Judul hitam tebal tanpa class tambahan */}
+          <h2 style={{ fontWeight: "bold", color: "black" }}>{data.judul}</h2>
+
+          <div className="views-info">
             {data.tanggal && <span>Tanggal: {data.tanggal}</span>}{" "}
-            {data.penulis && <span> | Penulis: {data.penulis}</span>}
+            {data.penulis && <span> | Penulis: {data.penulis}</span>}{" "}
+            <span> | {currentViews + 1}x dilihat</span>
           </div>
 
           {data.fileURL && (
-            <img
-              src={data.fileURL}
-              alt={data.judul}
-              className="w-full rounded-md mb-4"
-            />
+ 		<img
+ 		 src={data.fileURL}
+ 		 alt={data.judul}
+ 		 id="detail-berita-img"
+		/>
           )}
 
           <article id="isi" className="leading-relaxed">
             {formatParagraf(data.isi)}
           </article>
+
+          {/* 🔹 Tombol share */}
+          <ShareButtons judul={data.judul} />
         </section>
 
-        <ShareButtons judul={data.judul} />
-
-        <section id="berita-populer" className="mt-10">
-          <h2 className="text-lg font-semibold mb-3">Berita Populer</h2>
-          <ul className="space-y-2">
+        {/* 🔹 Berita Populer */}
+        <section id="berita-populer">
+          <h2 className="Berita-Populer">Berita Populer</h2>
+          <div id="berita-populer-list">
             {populer.map((b) => (
-              <li key={b.id}>
-                <a href={`/berita/${b.id}`} className="text-blue-700">
+              <div key={b.id} className="berita-populer-item">
+                <a href={`/berita/${b.id}`} className="berita-card-title">
                   {b.judul}
-                </a>{" "}
-                <span className="text-gray-500 text-sm">
+                </a>
+                <p className="views-info">
                   ({b.views || 0}x dilihat)
-                </span>
-              </li>
+                </p>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
 
-        <section id="berita-lainnya" className="mt-10">
-          <h2 className="text-lg font-semibold mb-3">Berita Lainnya</h2>
-          <ul className="space-y-2">
+        {/* 🔹 Berita Lainnya */}
+        <section id="berita-lainnya">
+          <h2 className="Berita-Lainnya">Berita Lainnya</h2>
+          <div id="berita-lainnya-list">
             {lainnya.map((b) => (
-              <li key={b.id}>
-                <a href={`/berita/${b.id}`} className="text-blue-700">
+              <div key={b.id} className="berita-lainnya-card">
+                <a href={`/berita/${b.id}`} className="berita-card-title">
                   {b.judul}
-                </a>{" "}
-                <span className="text-gray-500 text-sm">
+                </a>
+                <p className="views-info">
                   ({b.views || 0}x dilihat)
-                </span>
-              </li>
+                </p>
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
-      </main>
 
-      <footer className="text-center py-4 text-sm border-t border-gray-300 mt-10">
-        <p>&copy; 2025 - Liputan Binongko. Semua Hak Dilindungi.</p>
-      </footer>
-    </div>
+        {/* ✅ Footer */}
+        <footer>
+          <p>&copy; 2025 - Liputan Binongko. Semua Hak Dilindungi.</p>
+        </footer>
+      </main>
+    </>
   );
 }

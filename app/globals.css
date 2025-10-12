@@ -1,3 +1,4 @@
+/* === GLOBAL DASAR === */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -5,6 +6,7 @@ body {
   background: #f9f9f9;
 }
 
+/* === HEADER === */
 header {
   background-image: url("/binongko.jpg");
   background-color: #333;
@@ -32,6 +34,7 @@ header {
   margin-left: 5px;
 }
 
+/* === PENCARIAN === */
 #pencarian-berita {
   text-align: center;
   margin: 20px 0;
@@ -46,7 +49,10 @@ header {
   border-radius: 5px;
 }
 
-.Berita-Terbaru {
+/* === JUDUL KATEGORI === */
+.Berita-Terbaru,
+.Berita-Lainnya,
+.Berita-Populer {
   background-color: #f0f0f0;
   color: #007BFF;
   padding: 15px 25px;
@@ -59,12 +65,12 @@ header {
   max-width: 600px;
 }
 
+/* === SLIDER BERITA === */
 .berita-slider-wrapper {
   position: relative;
   width: 100%;
 }
 
-/* Tombol navigasi fix biar pas di tengah slider */
 .nav-btn {
   position: absolute;
   top: 50%;
@@ -82,16 +88,10 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: auto;
 }
 
-.nav-btn.prev {
-  left: -15px; /* geser dikit keluar biar ga nutup card */
-}
-
-.nav-btn.next {
-  right: -15px;
-}
+.nav-btn.prev { left: -15px; }
+.nav-btn.next { right: -15px; }
 
 .berita-slider-container {
   overflow-x: auto;
@@ -103,12 +103,13 @@ header {
   display: flex;
   gap: 1rem;
   flex-wrap: nowrap;
-  align-items: center; /* ✅ bikin tombol <> selalu pas tengah */
-  overflow-x: auto;          /* ✅ biar bisa digeser horizontal */
-  scroll-behavior: smooth;   /* ✅ animasi smooth */
-  scroll-snap-type: x mandatory; /* ✅ snap tiap card */
+  align-items: center;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
 }
 
+/* === CARD BERITA === */
 .berita-card {
   display: inline-block;
   width: 250px;
@@ -119,7 +120,7 @@ header {
   text-align: center;
   flex-shrink: 0;
   transition: transform 0.2s ease;
-  scroll-snap-align: start; /* ✅ snap posisi card */
+  scroll-snap-align: start;
 }
 
 .berita-card:hover {
@@ -145,7 +146,7 @@ header {
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 3;       /* maksimal 3 baris */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
 
@@ -154,7 +155,7 @@ header {
   text-decoration: underline;
 }
 
-/* === Tambahan style untuk jumlah views === */
+/* === JUMLAH VIEW === */
 .views-info {
   display: block;
   font-size: 0.85rem;
@@ -163,21 +164,7 @@ header {
   margin: -5px 0 10px 12px;
 }
 
-.Berita-Lainnya,
-.Berita-Populer {
-  background-color: #f0f0f0;
-  color: #007BFF;
-  padding: 15px 25px;
-  border-left: 30px solid #007BFF;
-  border-radius: 5px;
-  font-size: 1.8rem;
-  font-weight: bold;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  margin: 30px auto;
-  max-width: 600px;
-}
-
-/* === SUB JUDUL LIST BERITA LAINNYA === */
+/* === BERITA LAINNYA === */
 #berita-lainnya-list .berita-lainnya-card {
   background: #fff;
   margin: 8px 0;
@@ -205,7 +192,7 @@ header {
   color: #007BFF;
 }
 
-/* === SUB JUDUL LIST BERITA POPULER === */
+/* === BERITA POPULER === */
 #berita-populer-list .berita-populer-item {
   background: #fff;
   margin: 8px 0;
@@ -224,11 +211,6 @@ header {
   line-height: 1.4em;
 }
 
-#berita-populer-list .berita-populer-item small {
-  color: #666;
-  font-size: 0.85rem;
-}
-
 #berita-populer-list .berita-populer-item:hover {
   background: #fff8f8;
   border-color: #007BFF;
@@ -239,6 +221,7 @@ header {
   text-decoration: underline;
 }
 
+/* === NAVIGASI ATAS === */
 .auth-buttons {
   margin-top: 10px;
 }
@@ -254,6 +237,7 @@ header {
   text-decoration: underline;
 }
 
+/* === LOADING & CONTAINER === */
 .loading {
   text-align: center;
   padding: 20px;
@@ -277,16 +261,27 @@ header {
   border-radius: 6px;
 }
 
-#detail-berita img {
-  max-width: 100%;    /* ikut lebar layar */
-  width: 400px;       /* default max lebar */
-  max-height: 300px;  /* batasi tinggi */
-  object-fit: cover;  /* biar gambar terpotong rapi */
+/* === DETAIL BERITA === */
+#detail-berita {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 10px;
+  text-align: left;
+}
+
+/* ✅ Gambar detail berita — fix ukuran dan tidak melebar */
+#detail-berita img,
+#detail-berita-img {
+  width: 100%;
+  max-width: 400px !important;
+  height: auto;
   display: block;
   margin: 15px auto;
   border-radius: 8px;
+  object-fit: cover;
 }
 
+/* === FOOTER === */
 footer {
   background-color: #007BFF;
   color: white;
@@ -295,43 +290,7 @@ footer {
   font-size: 14px;
 }
 
-/* === Styling Berita Populer & Berita Lainnya === */
-
-.berita-populer-item,
-.berita-lainnya-item {
-  margin-bottom: 12px;
-  padding: 8px 10px;
-  border-left: 3px solid #0077cc;
-  background: #fff;
-  border-radius: 5px;
-  transition: background 0.2s ease;
-}
-
-.berita-populer-item:hover,
-.berita-lainnya-item:hover {
-  background: #eef6ff;
-}
-
-.berita-populer-item a,
-.berita-lainnya-item a {
-  text-decoration: none;
-  font-weight: bold;
-  font-size: 16px;
-  color: #333;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.berita-populer-item a:hover,
-.berita-lainnya-item a:hover {
-  color: #0077cc;
-}
-
-.views-info {
-  font-size: 13px;
-  color: #777;
-}
-
+/* === SHARE BUTTONS === */
 .share-buttons {
   margin-top: 20px;
   padding: 10px 0;
@@ -354,10 +313,10 @@ footer {
   transition: background 0.3s ease;
 }
 
-#share-wa { background: #25D366; }   /* WhatsApp */
-#share-fb { background: #1877f2; }   /* Facebook */
-#share-tw { background: #1da1f2; }   /* Twitter */
-#share-link { background: #555; }    /* Copy Link */
+#share-wa { background: #25D366; }
+#share-fb { background: #1877f2; }
+#share-tw { background: #1da1f2; }
+#share-link { background: #555; }
 
 .share-buttons a:hover {
   opacity: 0.8;
