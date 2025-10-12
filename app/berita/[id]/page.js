@@ -4,7 +4,7 @@ import { ref, get, set } from "firebase/database";
 import { getDB } from "../../../lib/firebase";
 import ShareButtons from "../../../components/ShareButtons";
 
-// Format paragraf biar rapi
+// 🔹 Format paragraf agar rapi
 function formatParagraf(teks) {
   if (!teks) return "";
   return teks
@@ -13,9 +13,9 @@ function formatParagraf(teks) {
     .map((p, i) => <p key={i}>{p.trim()}</p>);
 }
 
-// Metadata dinamis untuk SEO & preview sosial
+// 🔹 Metadata dinamis (SEO & preview sosial)
 export async function generateMetadata({ params }) {
-  const id = await params.id; // ← wajib pakai await sesuai Next.js 14+
+  const { id } = params;
   const db = getDB();
   const beritaRef = ref(db, "berita/" + id);
   const snapshot = await get(beritaRef);
@@ -25,12 +25,14 @@ export async function generateMetadata({ params }) {
   }
 
   const berita = snapshot.val();
-  const fullUrl = `https://liputan-binongko-wo1e.vercel.app/berita/${id}`;
-  const imageUrl = berita.fileURL || "/default.jpg";
-  const deskripsi = berita.isi?.slice(0, 150) || "Berita terkini dari Binongko, Wakatobi";
+  const fullUrl = `https://liputan-binongko-three.vercel.app/berita/${id}`;
+  const imageUrl =
+    berita.fileURL || "https://liputan-binongko-three.vercel.app/default.jpg";
+  const deskripsi =
+    berita.isi?.slice(0, 150) || "Berita terkini dari Binongko, Wakatobi.";
 
   return {
-    metadataBase: new URL("https://liputan-binongko-wo1e.vercel.app"),
+    metadataBase: new URL("https://liputan-binongko-three.vercel.app"),
     title: `${berita.judul} - Liputan Binongko`,
     description: deskripsi,
     openGraph: {
@@ -60,9 +62,9 @@ export async function generateMetadata({ params }) {
   };
 }
 
-// Halaman detail berita
+// 🔹 Halaman detail berita
 export default async function BeritaDetailPage({ params }) {
-  const id = await params.id;
+  const { id } = params;
   const db = getDB();
   const beritaRef = ref(db, "berita/" + id);
   const snapshot = await get(beritaRef);
@@ -73,11 +75,11 @@ export default async function BeritaDetailPage({ params }) {
 
   const data = snapshot.val();
 
-  // Update jumlah views
+  // ✅ Update jumlah views (sementara di server)
   const currentViews = data.views || 0;
-  await set(ref(db, "berita/" + id + "/views"), currentViews + 1);
+  await set(ref(db, `berita/${id}/views`), currentViews + 1);
 
-  // Ambil semua berita untuk populer & lainnya
+  // 🔹 Ambil semua berita untuk populer & lainnya
   const semuaRef = ref(db, "berita");
   const semuaSnap = await get(semuaRef);
   const semua = semuaSnap.exists()
@@ -91,69 +93,84 @@ export default async function BeritaDetailPage({ params }) {
 
   const lainnya = semua
     .filter((b) => b.id !== id && b.status === "approved")
-    .sort((a, b) => new Date(b.tanggal || 0) - new Date(a.tanggal || 0))
+    .sort(
+      (a, b) => new Date(b.tanggal || 0) - new Date(a.tanggal || 0)
+    )
     .slice(0, 5);
 
   return (
-    <div>
-      <header>
-        <div className="header-top">
-          <a href="/login" className="btn">Login</a>
-          <a href="/register" className="btn">Daftar</a>
-        </div>
-        <h1>Liputan Binongko</h1>
-        <div className="auth-buttons">
-          <a href="/">Beranda</a>
-          <a href="/profil">Profil</a>
-          <a href="/kontak">Kontak</a>
+    <div className="min-h-screen bg-white text-black">
+      <header className="p-4 border-b border-gray-300">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">
+            <a href="/">Liputan Binongko</a>
+          </h1>
+          <nav className="flex gap-4">
+            <a href="/">Beranda</a>
+            <a href="/profil">Profil</a>
+            <a href="/kontak">Kontak</a>
+            <a href="/tentang">Tentang</a>
+          </nav>
         </div>
       </header>
 
-      <main className="container">
-        <section id="detail-berita">
-          <h2 id="judul">{data.judul}</h2>
-          <div className="meta">
-            <span id="tanggal">{data.tanggal && "Tanggal: " + data.tanggal}</span>{" "}
-            <span id="penulis">{data.penulis && "Penulis: " + data.penulis}</span>
+      <main className="max-w-3xl mx-auto p-4">
+        <section id="detail-berita" className="mb-8">
+          <h2 className="text-xl font-semibold mb-2">{data.judul}</h2>
+          <div className="text-sm text-gray-600 mb-4">
+            {data.tanggal && <span>Tanggal: {data.tanggal}</span>}{" "}
+            {data.penulis && <span> | Penulis: {data.penulis}</span>}
           </div>
 
           {data.fileURL && (
-            <img id="gambar" src={data.fileURL} alt={data.judul} style={{ maxWidth: "100%" }} />
+            <img
+              src={data.fileURL}
+              alt={data.judul}
+              className="w-full rounded-md mb-4"
+            />
           )}
 
-          <article id="isi" className="isi-berita">
+          <article id="isi" className="leading-relaxed">
             {formatParagraf(data.isi)}
           </article>
         </section>
 
         <ShareButtons judul={data.judul} />
 
-        <section id="berita-populer">
-          <h2 className="Berita-Populer">Berita Populer</h2>
-          <div id="berita-populer-list">
+        <section id="berita-populer" className="mt-10">
+          <h2 className="text-lg font-semibold mb-3">Berita Populer</h2>
+          <ul className="space-y-2">
             {populer.map((b) => (
-              <div key={b.id} className="berita-populer-item">
-                <a href={`/berita/${b.id}`}>{b.judul}</a>
-                <p className="views-info">({b.views || 0}x dilihat)</p>
-              </div>
+              <li key={b.id}>
+                <a href={`/berita/${b.id}`} className="text-blue-700">
+                  {b.judul}
+                </a>{" "}
+                <span className="text-gray-500 text-sm">
+                  ({b.views || 0}x dilihat)
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
 
-        <section id="berita-lainnya">
-          <h2 className="Berita-Lainnya">Berita Lainnya</h2>
-          <div id="berita-lainnya-list">
+        <section id="berita-lainnya" className="mt-10">
+          <h2 className="text-lg font-semibold mb-3">Berita Lainnya</h2>
+          <ul className="space-y-2">
             {lainnya.map((b) => (
-              <div key={b.id} className="berita-lainnya-item">
-                <a href={`/berita/${b.id}`}>{b.judul}</a>
-                <p className="views-info">({b.views || 0}x dilihat)</p>
-              </div>
+              <li key={b.id}>
+                <a href={`/berita/${b.id}`} className="text-blue-700">
+                  {b.judul}
+                </a>{" "}
+                <span className="text-gray-500 text-sm">
+                  ({b.views || 0}x dilihat)
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
         </section>
       </main>
 
-      <footer>
+      <footer className="text-center py-4 text-sm border-t border-gray-300 mt-10">
         <p>&copy; 2025 - Liputan Binongko. Semua Hak Dilindungi.</p>
       </footer>
     </div>
