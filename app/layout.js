@@ -16,7 +16,7 @@ export const metadata = {
     siteName: "Liputan Binongko",
     images: [
       {
-        url: "https://liputan-binongko-three.vercel.app/default.jpg", // ✅ pakai URL absolut
+        url: "https://liputan-binongko-three.vercel.app/default.jpg",
         width: 1200,
         height: 630,
         alt: "Liputan Binongko",
@@ -30,7 +30,11 @@ export const metadata = {
     title: "Liputan Binongko",
     description:
       "Berita terkini dari Binongko, Wakatobi, dan sekitarnya.",
-    images: ["https://liputan-binongko-three.vercel.app/default.jpg"], // ✅ juga absolut
+    images: ["https://liputan-binongko-three.vercel.app/default.jpg"],
+  },
+  // ✅ Tambahkan meta tag verifikasi Google di sini
+  other: {
+    "google-site-verification": "qYBO8Jrxl7ecyW-apaPOFpq1KjXSaWwt1TkpqpbdyA4",
   },
 };
 
