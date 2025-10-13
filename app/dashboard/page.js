@@ -1,15 +1,14 @@
-
-"use client"; 
+"use client";
 
 import "../../styles/dashboard.css";
 import { useState, useEffect } from "react";
 // Firebase
 import { initializeApp } from "firebase/app";
-import { 
-  getAuth, onAuthStateChanged, signOut 
+import {
+  getAuth, onAuthStateChanged, signOut
 } from "firebase/auth";
-import { 
-  getDatabase, ref, push, set, onValue, remove, update 
+import {
+  getDatabase, ref, push, set, onValue, remove, update
 } from "firebase/database";
 
 // 🔹 Konfigurasi Firebase
@@ -86,9 +85,16 @@ export default function Dashboard() {
       fileURL = data.secure_url || "";
     }
 
+    // 🔹 buat slug otomatis dari judul
+    const slug = judul
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+
     const newRef = push(ref(db, "berita"));
     await set(newRef, {
       judul,
+      slug,
       isi,
       fileURL,
       tanggal: new Date().toISOString(),
@@ -121,8 +127,15 @@ export default function Dashboard() {
 
   function simpanEdit() {
     if (editId) {
+      // 🔹 perbarui juga slug ketika judul berubah
+      const newSlug = editJudul
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)+/g, "");
+
       update(ref(db, "berita/" + editId), {
         judul: editJudul,
+        slug: newSlug,
         isi: editIsi,
         status: "pending"
       });
@@ -154,20 +167,20 @@ export default function Dashboard() {
 
         {user && (
           <form onSubmit={handleUpload} className="uploadForm">
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Judul Berita"
               value={judul}
               onChange={(e) => setJudul(e.target.value)}
               required
             />
-            <textarea 
+            <textarea
               placeholder="Isi Berita"
               value={isi}
               onChange={(e) => setIsi(e.target.value)}
               required
             />
-            <input 
+            <input
               type="file"
               accept="image/*,video/*"
               onChange={(e) => setFile(e.target.files[0])}
@@ -197,12 +210,12 @@ export default function Dashboard() {
         <div className="modal">
           <div className="modal-content">
             <h2>Edit Berita</h2>
-            <input 
+            <input
               type="text"
               value={editJudul}
               onChange={(e) => setEditJudul(e.target.value)}
             />
-            <textarea 
+            <textarea
               value={editIsi}
               onChange={(e) => setEditIsi(e.target.value)}
             />
