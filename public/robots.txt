@@ -1,0 +1,4 @@
+User-agent: *
+Disallow:
+
+Sitemap: https://liputan-binongko-three.vercel.app/sitemap.xml
