@@ -32,7 +32,7 @@ export const metadata = {
       "Berita terkini dari Binongko, Wakatobi, dan sekitarnya.",
     images: ["https://liputan-binongko-three.vercel.app/default.jpg"],
   },
-  // ✅ Tambahkan meta tag verifikasi Google di sini
+  // ✅ Meta tag verifikasi Google
   other: {
     "google-site-verification": "qYBO8Jrxl7ecyW-apaPOFpq1KjXSaWwt1TkpqpbdyA4",
   },
@@ -41,6 +41,20 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="id">
+      <head>
+        {/* ✅ Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-X6ZL5ETZ4N"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-X6ZL5ETZ4N');
+            `,
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );
