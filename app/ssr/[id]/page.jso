@@ -1,37 +1,31 @@
 import Image from "next/image";
-import { getDatabase, ref, get, child } from "firebase/database";
-import { initializeApp } from "firebase/app";
 
-// ✅ Konfigurasi Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCHYqB77kPPJcoNfW8APKUQoh066eMGipA",
-  authDomain: "portal-binongko-dad4d.firebaseapp.com",
-  databaseURL:
-    "https://portal-binongko-dad4d-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "portal-binongko-dad4d",
-  storageBucket: "portal-binongko-dad4d.appspot.com",
-  messagingSenderId: "582358308032",
-  appId: "1:582358308032:web:9d36c636adec204ab24925",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+// ✅ Konfigurasi
 const baseUrl = "https://liputan-binongko-three.vercel.app";
+const dbUrl = "https://portal-binongko-dad4d-default-rtdb.asia-southeast1.firebasedatabase.app";
 
-// 🔹 Metadata dinamis (SEO & preview sosial)
+// ✅ Fungsi ambil data berita via REST API (SSR friendly)
+async function fetchBerita(id) {
+  const res = await fetch(`${dbUrl}/berita/${id}.json`, { cache: "no-store" });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data;
+}
+
+// ✅ Metadata otomatis untuk share (FB, WA, Twitter)
 export async function generateMetadata({ params }) {
-  const resolvedParams = await params; // ✅ fix Next.js 14
+  const resolvedParams = await params; // fix Next.js 14 App Router
   const { id } = resolvedParams;
 
-  const snapshot = await get(child(ref(db), `berita/${id}`));
-  if (!snapshot.exists()) {
+  const data = await fetchBerita(id);
+
+  if (!data) {
     return {
       title: "Berita tidak ditemukan | Liputan Binongko",
       description: "Halaman berita ini tidak ditemukan di database.",
     };
   }
 
-  const data = snapshot.val();
   const imageUrl = data.gambar || data.fileURL || "/fallback-image.jpg";
 
   return {
@@ -41,7 +35,7 @@ export async function generateMetadata({ params }) {
       title: data.judul,
       description: data.isi?.substring(0, 150) + "...",
       images: [imageUrl],
-      url: `${baseUrl}/berita/${id}`,
+      url: `${baseUrl}/ssr/${id}`,
       type: "article",
     },
     twitter: {
@@ -53,13 +47,14 @@ export async function generateMetadata({ params }) {
   };
 }
 
-// 🔹 Halaman detail berita
-export default async function BeritaDetailPage({ params }) {
-  const resolvedParams = await params; // ✅ fix Next.js 14
+// ✅ Halaman utama berita
+export default async function Page({ params }) {
+  const resolvedParams = await params; // fix Next.js 14 App Router
   const { id } = resolvedParams;
 
-  const snapshot = await get(child(ref(db), `berita/${id}`));
-  if (!snapshot.exists()) {
+  const data = await fetchBerita(id);
+
+  if (!data) {
     return (
       <div className="p-6 text-center">
         <h1 className="text-2xl font-bold mb-2">Berita tidak ditemukan</h1>
@@ -67,8 +62,6 @@ export default async function BeritaDetailPage({ params }) {
       </div>
     );
   }
-
-  const data = snapshot.val();
 
   return (
     <div className="p-4">
