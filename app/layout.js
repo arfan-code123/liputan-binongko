@@ -37,10 +37,10 @@ export default function RootLayout({ children }) {
     <html lang="id">
       <head>
         {/* ✅ Dua meta verifikasi Google */}
-        <meta
-          name="google-site-verification"
-          content="nnD-5BQzd2yRP-1dsErrVBcHtLOlwNFotRrNwHe5Fms"
-        />
+          <meta
+           name="google-site-verification"
+           content="qYBO8Jrxl7ecyW-apaPOFpq1KjXSaWwt1TkpqpbdyA4"
+           />
       </head>
       <body>
         {children}
