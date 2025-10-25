@@ -12,7 +12,7 @@ export const metadata = {
   openGraph: {
     title: "Liputan Binongko - Berita Terbaru",
     description: "Berita terbaru dan terpercaya dari Liputan Binongko.",
-    url: "https://webkamu.com/",
+    url: "https://liputan-binongko-three.vercel.app/",
     siteName: "Liputan Binongko",
     images: [
       {
@@ -28,7 +28,7 @@ export const metadata = {
 };
 
 // ✅ Revalidate untuk ISR
-export const revalidate = 10; // rebuild halaman tiap 10 detik
+export const revalidate = 10;
 
 // ✅ Konfigurasi Firebase
 const firebaseConfig = {
@@ -42,11 +42,10 @@ const firebaseConfig = {
   appId: "1:582358308032:web:9d36c636adec204ab24925",
 };
 
-// ✅ Inisialisasi Firebase hanya sekali
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ✅ Fungsi SSR: ambil semua berita dari Firebase
+// ✅ Fungsi SSR: ambil semua berita
 async function getAllBerita() {
   const dbRef = ref(db);
   const snapshot = await get(child(dbRef, `berita`));
@@ -63,7 +62,6 @@ async function getAllBerita() {
 export default async function Home() {
   const allBerita = await getAllBerita();
 
-  // Ambil berita terbaru, populer, dan lainnya
   const beritaTerbaru = allBerita.slice(0, 5);
   const beritaPopuler = [...allBerita]
     .sort((a, b) => (b.views || 0) - (a.views || 0))
@@ -72,10 +70,27 @@ export default async function Home() {
 
   return (
     <>
-      {/* ✅ Header Reusable */}
       <Header />
 
-      <main>
+      <main className="p-4">
+        {/* ✅ Section Pencarian Berita (baru ditambahkan) */}
+        <section id="pencarian-berita" className="mb-6">
+          <input
+            type="text"
+            id="cariInput"
+            placeholder="Cari judul berita..."
+            className="border p-2 rounded w-full md:w-1/2"
+          />
+          <button
+            id="cariBtn"
+            className="bg-blue-500 text-white px-4 py-2 rounded ml-2"
+          >
+            Cari
+          </button>
+        </section>
+
+        <ul id="hasilCari" className="space-y-2 mb-6"></ul>
+
         {/* ✅ Slider Berita Terbaru */}
         <section id="berita">
           <h2 className="Berita-Terbaru">Berita Terbaru</h2>
@@ -91,9 +106,7 @@ export default async function Home() {
                 <a href={`/berita/${b.id}`} className="berita-card-title">
                   {b.judul}
                 </a>
-                <p className="views-info">
-                  ({b.views || 0}x dilihat)
-                </p>
+                <p className="views-info">({b.views || 0}x dilihat)</p>
               </div>
             ))}
           </div>
@@ -108,19 +121,53 @@ export default async function Home() {
                 <a href={`/berita/${b.id}`} className="berita-card-title">
                   {b.judul}
                 </a>
-                <p className="views-info">
-                  ({b.views || 0}x dilihat)
-                </p>
+                <p className="views-info">({b.views || 0}x dilihat)</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ✅ Footer */}
         <footer>
           <p>&copy; 2025 - Liputan Binongko. Semua Hak Dilindungi.</p>
         </footer>
       </main>
+
+      {/* ✅ Script pencarian client-side */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            const cariInput = document.getElementById('cariInput');
+            const cariBtn = document.getElementById('cariBtn');
+            const hasilCari = document.getElementById('hasilCari');
+            const beritaList = ${JSON.stringify(allBerita)};
+
+            function renderHasil(items) {
+              hasilCari.innerHTML = '';
+              if (items.length === 0) {
+                hasilCari.innerHTML = '<li class="text-gray-500">Berita tidak ditemukan</li>';
+                return;
+              }
+              items.forEach(b => {
+                const li = document.createElement('li');
+                li.innerHTML = \`<a href="/berita/\${b.id}" class="text-blue-600 hover:underline">\${b.judul}</a>\`;
+                hasilCari.appendChild(li);
+              });
+            }
+
+            cariBtn.addEventListener('click', () => {
+              const keyword = cariInput.value.toLowerCase();
+              const filtered = beritaList.filter(b => b.judul.toLowerCase().includes(keyword));
+              renderHasil(filtered);
+            });
+
+            cariInput.addEventListener('keyup', (e) => {
+              if (e.key === 'Enter') {
+                cariBtn.click();
+              }
+            });
+          `,
+        }}
+      />
     </>
   );
 }
