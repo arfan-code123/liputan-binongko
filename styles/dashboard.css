@@ -1,3 +1,4 @@
+/* ======== DASHBOARD KHUSUS ======== */
 body {
   font-family: Arial, sans-serif;
   background: #f7f7f7;
@@ -5,8 +6,9 @@ body {
   padding: 0;
 }
 
+/* Header Dashboard */
 header {
-  background-image:  url("/binongko.jpg");
+  background-image: url("/binongko.jpg");
   background-color: #333;
   background-size: cover;
   background-position: center;
@@ -22,6 +24,7 @@ header {
   text-align: right;
   margin-bottom: 30px;
 }
+
 .auth-buttons {
   display: flex;
   gap: 15px;
@@ -62,6 +65,7 @@ header {
   background-color: #b52a37;
 }
 
+/* Modal Styling */
 .modal {
   display: none;
   position: fixed;
@@ -134,30 +138,85 @@ header {
   cursor: pointer;
 }
 
+/* Main */
 main {
   padding: 20px;
 }
 
-#uploadForm {
+/* Form Upload */
+.uploadForm {
   background: white;
   padding: 20px;
   border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-#uploadForm input, #uploadForm textarea, #uploadForm button {
+.uploadForm input,
+.uploadForm textarea,
+.uploadForm button {
   width: 100%;
   margin-bottom: 10px;
   padding: 8px;
 }
 
-#uploadForm button {
+.uploadForm button {
   background: #27ae60;
   color: white;
   border: none;
   cursor: pointer;
+  font-weight: bold;
 }
 
-#uploadForm button:disabled {
+.uploadForm button:disabled {
   background: gray;
   cursor: not-allowed;
+}
+
+/* ==== Form Upload Berita ==== */
+.uploadForm {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  max-width: 700px;
+  margin: 30px auto;
+}
+
+.uploadForm input[type="text"],
+.uploadForm textarea,
+.uploadForm input[type="file"] {
+  width: 100%;
+  font-size: 1rem; /* Perbesar font */
+  padding: 14px 16px; /* Lebihkan padding */
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  transition: border-color 0.3s ease;
+}
+
+.uploadForm input[type="text"]:focus,
+.uploadForm textarea:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.uploadForm textarea {
+  min-height: 180px; /* Lebihkan tinggi area isi berita */
+  resize: vertical;
+}
+
+.uploadForm button {
+  background: #28a745;
+  color: white;
+  font-size: 1rem;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s ease;
+}
+
+.uploadForm button:hover {
+  background: #218838;
 }

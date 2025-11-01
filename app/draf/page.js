@@ -53,7 +53,19 @@ export default function DrafPage() {
             }}
           >
             <h3>{b.judul || "Tanpa Judul"}</h3>
-            <p>{b.isi}</p>
+
+            {/* ✅ Link dalam isi berita jadi aktif */}
+            <div
+              dangerouslySetInnerHTML={{
+                __html: (b.isi || "")
+                  .replace(
+                    /(https?:\/\/[^\s]+)/g,
+                    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:underline;">$1</a>'
+                  )
+                  .replace(/\n/g, "<br />"),
+              }}
+            />
+
             {b.fileURL && (
               <img
                 src={b.fileURL}
@@ -69,7 +81,11 @@ export default function DrafPage() {
             </p>
             <button
               onClick={() => setujui(b.id)}
-              style={{ marginRight: "10px", background: "green", color: "white" }}
+              style={{
+                marginRight: "10px",
+                background: "green",
+                color: "white",
+              }}
             >
               Setujui
             </button>

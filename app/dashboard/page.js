@@ -1,4 +1,3 @@
-
 "use client";
 
 import "../../styles/dashboard.css";
@@ -71,7 +70,9 @@ export default function Dashboard() {
   async function handleUpload(e) {
     e.preventDefault();
     if (!user) return alert("Harus login dulu!");
-                                                                           let fileURL = "";                                                      if (file) {
+
+    let fileURL = "";
+    if (file) {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", uploadPreset);
@@ -80,7 +81,9 @@ export default function Dashboard() {
         method: "POST",
         body: formData
       });
-      const data = await res.json();                                         fileURL = data.secure_url || "";                                     }
+      const data = await res.json();
+      fileURL = data.secure_url || "";
+    }
 
     const newRef = push(ref(db, "berita"));
     await set(newRef, {
@@ -89,7 +92,9 @@ export default function Dashboard() {
       fileURL,
       tanggal: new Date().toISOString(),
       kategori: "umum",
-      penulisId: user.uid,                                                   penulisEmail: user.email,                                              status: "pending"
+      penulisId: user.uid,
+      penulisEmail: user.email,
+      status: "pending"
     });
 
     setJudul("");
@@ -99,7 +104,9 @@ export default function Dashboard() {
   }
 
   // 🔹 hapus
-  function hapusBerita(id) {                                               if (confirm("Yakin hapus berita ini?")) {                                remove(ref(db, "berita/" + id));
+  function hapusBerita(id) {
+    if (confirm("Yakin hapus berita ini?")) {
+      remove(ref(db, "berita/" + id));
     }
   }
 
@@ -108,7 +115,9 @@ export default function Dashboard() {
     setEditId(b.id);
     setEditJudul(b.judul);
     setEditIsi(b.isi);
-    setShowModal(true);                                                  }                                                                    
+    setShowModal(true);
+  }
+
   function simpanEdit() {
     if (editId) {
       update(ref(db, "berita/" + editId), {
@@ -135,12 +144,18 @@ export default function Dashboard() {
           <a href="/kontak">Kontak</a>
           <button onClick={logout}>Logout</button>
         </div>
-      </header>                                                                                                                                     <main>                                                                   <div className="status">
-          {user ? `Login sebagai: ${user.email}` : "Anda belum login."}        </div>
+      </header>
+
+      <main>
+        <div className="status">
+          {user ? `Login sebagai: ${user.email}` : "Anda belum login."}
+        </div>
 
         {user && (
           <form onSubmit={handleUpload} className="uploadForm">
-            <input                                                                   type="text"                                                            placeholder="Judul Berita"
+            <input
+              type="text"
+              placeholder="Judul Berita"
               value={judul}
               onChange={(e) => setJudul(e.target.value)}
               required
@@ -149,7 +164,9 @@ export default function Dashboard() {
               placeholder="Isi Berita"
               value={isi}
               onChange={(e) => setIsi(e.target.value)}
-              required                                                             />                                                                     <input
+              required
+            />
+            <input
               type="file"
               accept="image/*,video/*"
               onChange={(e) => setFile(e.target.files[0])}
@@ -163,7 +180,14 @@ export default function Dashboard() {
           {beritaSaya.map((b) => (
             <div key={b.id} className="berita-item">
               <h3>{b.judul}</h3>
-              <p>{b.isi}</p>
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: b.isi.replace(
+                    /(https?:\/\/[^\s]+)/g,
+                    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#007BFF; text-decoration:underline;">$1</a>'
+                  ),
+                }}
+              ></p>
               {b.fileURL && <img src={b.fileURL} width="200" />}
               <p><small>{new Date(b.tanggal).toLocaleString()}</small></p>
               <p><b>Status:</b> {b.status}</p>
