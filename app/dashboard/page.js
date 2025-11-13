@@ -2,6 +2,7 @@
 
 import "../../styles/dashboard.css";
 import { useState, useEffect } from "react";
+// Firebase
 import { initializeApp } from "firebase/app";
 import {
   getAuth, onAuthStateChanged, signOut
@@ -28,9 +29,7 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [judul, setJudul] = useState("");
   const [isi, setIsi] = useState("");
-  const [file1, setFile1] = useState(null);
-  const [file2, setFile2] = useState(null);
-  const [file3, setFile3] = useState(null);
+  const [file, setFile] = useState(null);
   const [beritaSaya, setBeritaSaya] = useState([]);
   const [editId, setEditId] = useState(null);
   const [editJudul, setEditJudul] = useState("");
@@ -67,35 +66,30 @@ export default function Dashboard() {
     });
   }
 
-  // 🔹 upload berita dengan 3 gambar
+  // 🔹 upload berita
   async function handleUpload(e) {
     e.preventDefault();
     if (!user) return alert("Harus login dulu!");
 
-    async function uploadFile(file) {
-      if (!file) return "";
+    let fileURL = "";
+    if (file) {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("upload_preset", uploadPreset);
+
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
         method: "POST",
         body: formData
       });
       const data = await res.json();
-      return data.secure_url || "";
+      fileURL = data.secure_url || "";
     }
-
-    const fileURL1 = await uploadFile(file1);
-    const fileURL2 = await uploadFile(file2);
-    const fileURL3 = await uploadFile(file3);
 
     const newRef = push(ref(db, "berita"));
     await set(newRef, {
       judul,
       isi,
-      fileURL1,
-      fileURL2,
-      fileURL3,
+      fileURL,
       tanggal: new Date().toISOString(),
       kategori: "umum",
       penulisId: user.uid,
@@ -105,10 +99,8 @@ export default function Dashboard() {
 
     setJudul("");
     setIsi("");
-    setFile1(null);
-    setFile2(null);
-    setFile3(null);
-    alert("Berita dengan 3 gambar berhasil dikirim!");
+    setFile(null);
+    alert("Berita berhasil dikirim!");
   }
 
   // 🔹 hapus
@@ -174,54 +166,39 @@ export default function Dashboard() {
               onChange={(e) => setIsi(e.target.value)}
               required
             />
-
-            <label>Gambar Atas:</label>
-            <input type="file" accept="image/*" onChange={(e) => setFile1(e.target.files[0])} />
-            <label>Gambar Tengah:</label>
-            <input type="file" accept="image/*" onChange={(e) => setFile2(e.target.files[0])} />
-            <label>Gambar Akhir:</label>
-            <input type="file" accept="image/*" onChange={(e) => setFile3(e.target.files[0])} />
-
+            <input
+              type="file"
+              accept="image/*,video/*"
+              onChange={(e) => setFile(e.target.files[0])}
+            />
             <button type="submit">Upload Berita</button>
           </form>
         )}
 
         <h2>Berita Saya</h2>
         <div className="beritaSaya">
-          {beritaSaya.map((b) => {
-            const images = [b.fileURL1, b.fileURL2, b.fileURL3, b.fileURL].filter(Boolean);
-            const img1 = images[0];
-            const img2 = images[1];
-            const img3 = images[2];
-
-            return (
-              <div key={b.id} className="berita-item">
-                <h3>{b.judul}</h3>
-
-                {img1 && <img src={img1} width="300" alt="gambar1" style={{ borderRadius: "10px", marginBottom: "10px" }} />}
-
-                <p
-                  dangerouslySetInnerHTML={{
-                    __html: b.isi.replace(
-                      /(https?:\/\/[^\s]+)/g,
-                      '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#007BFF;text-decoration:underline;">$1</a>'
-                    ),
-                  }}
-                ></p>
-
-                {img2 && <img src={img2} width="300" alt="gambar2" style={{ borderRadius: "10px", margin: "10px 0" }} />}
-                {img3 && <img src={img3} width="300" alt="gambar3" style={{ borderRadius: "10px", marginTop: "10px" }} />}
-
-                <p><small>{new Date(b.tanggal).toLocaleString()}</small></p>
-                <p><b>Status:</b> {b.status}</p>
-                <button onClick={() => bukaEdit(b)}>Edit</button>
-                <button onClick={() => hapusBerita(b.id)}>Hapus</button>
-              </div>
-            );
-          })}
+          {beritaSaya.map((b) => (
+            <div key={b.id} className="berita-item">
+              <h3>{b.judul}</h3>
+              <p
+                dangerouslySetInnerHTML={{
+                  __html: b.isi.replace(
+                    /(https?:\/\/[^\s]+)/g,
+                    '<a href="$1" target="_blank" rel="noopener noreferrer" style="color:#007BFF; text-decoration:underline;">$1</a>'
+                  ),
+                }}
+              ></p>
+              {b.fileURL && <img src={b.fileURL} width="200" />}
+              <p><small>{new Date(b.tanggal).toLocaleString()}</small></p>
+              <p><b>Status:</b> {b.status}</p>
+              <button onClick={() => bukaEdit(b)}>Edit</button>
+              <button onClick={() => hapusBerita(b.id)}>Hapus</button>
+            </div>
+          ))}
         </div>
       </main>
 
+      {/* Modal edit */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
