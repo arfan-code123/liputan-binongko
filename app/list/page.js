@@ -1,44 +1,45 @@
 "use client";
 
-import "../../styles/list.css"; // ✅ tambahkan ini
+import "../../styles/list.css";
 import { useEffect, useState } from "react";
 import { ref, onValue, update, remove } from "firebase/database";
-import { getDB } from "../../lib/firebase"; // ✅ sama seperti page.js
+import { getDB } from "../../lib/firebase";
 
 export default function ListBeritaPage() {
   const [berita, setBerita] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editKey, setEditKey] = useState(null);
-  const [editForm, setEditForm] = useState({ judul: "", isi: "", file: null });
+  const [editForm, setEditForm] = useState({
+    judul: "",
+    isi: "",
+    file1: null,
+    file2: null,
+    file3: null,
+  });
 
-  // 🔹 Load semua berita saat komponen mount
+  const cloudName = "ddy15mvkg";
+  const uploadPreset = "portal_berita";
+
+  // 🔹 Load semua berita
   useEffect(() => {
     setLoading(true);
-    const db = getDB(); // ✅ ambil database dari fungsi, bukan variabel langsung
+    const db = getDB();
     const beritaRef = ref(db, "berita");
 
-    const unsubscribe = onValue(
-      beritaRef,
-      (snapshot) => {
-        const data = snapshot.val();
-        if (!data) {
-          setBerita([]);
-          setLoading(false);
-          return;
-        }
-
-        const list = Object.entries(data)
-          .sort((a, b) => (b[1].tanggal || 0) - (a[1].tanggal || 0))
-          .map(([key, value]) => ({ id: key, ...value }));
-
-        setBerita(list);
+    const unsubscribe = onValue(beritaRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data) {
+        setBerita([]);
         setLoading(false);
-      },
-      (error) => {
-        console.error("Firebase Error:", error);
-        setLoading(false);
+        return;
       }
-    );
+      const list = Object.entries(data)
+        .sort((a, b) => (b[1].tanggal || 0) - (a[1].tanggal || 0))
+        .map(([key, value]) => ({ id: key, ...value }));
+
+      setBerita(list);
+      setLoading(false);
+    });
 
     return () => unsubscribe();
   }, []);
@@ -56,67 +57,73 @@ export default function ListBeritaPage() {
   // 🔹 Mulai edit
   const mulaiEdit = (item) => {
     setEditKey(item.id);
-    setEditForm({ judul: item.judul || "", isi: item.isi || "", file: null });
+    setEditForm({
+      judul: item.judul || "",
+      isi: item.isi || "",
+      file1: null,
+      file2: null,
+      file3: null,
+    });
   };
 
   // 🔹 Batalkan edit
   const batalkanEdit = () => {
     setEditKey(null);
-    setEditForm({ judul: "", isi: "", file: null });
+    setEditForm({
+      judul: "",
+      isi: "",
+      file1: null,
+      file2: null,
+      file3: null,
+    });
   };
 
-  // 🔹 Simpan hasil edit
-  const simpanEdit = async (id, oldFileURL) => {
-    const db = getDB();
+  // 🔹 Upload ke Cloudinary
+  async function uploadFile(file) {
+    if (!file) return null;
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    return data.secure_url || null;
+  }
 
+  // 🔹 Simpan hasil edit
+  const simpanEdit = async (item) => {
+    const db = getDB();
     if (!editForm.judul || !editForm.isi) {
       alert("Judul dan isi tidak boleh kosong!");
       return;
     }
 
-    let fileURL = oldFileURL || "";
+    try {
+      const [url1, url2, url3] = await Promise.all([
+        editForm.file1 ? uploadFile(editForm.file1) : item.fileURL1 || item.fileURL || "",
+        editForm.file2 ? uploadFile(editForm.file2) : item.fileURL2 || "",
+        editForm.file3 ? uploadFile(editForm.file3) : item.fileURL3 || "",
+      ]);
 
-    // Upload gambar baru ke Cloudinary (jika ada)
-    if (editForm.file) {
-      const cloudName = "ddy15mvkg"; // ganti sesuai akun Cloudinary kamu
-      const uploadPreset = "portal_berita";
+      await update(ref(db, `berita/${item.id}`), {
+        judul: editForm.judul,
+        isi: editForm.isi,
+        fileURL1: url1,
+        fileURL2: url2,
+        fileURL3: url3,
+        updatedAt: Date.now(),
+      });
 
-      const formData = new FormData();
-      formData.append("file", editForm.file);
-      formData.append("upload_preset", uploadPreset);
-
-      try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
-          method: "POST",
-          body: formData,
-        });
-        const data = await res.json();
-        if (data.secure_url) fileURL = data.secure_url;
-        else {
-          alert("Gagal upload gambar");
-          return;
-        }
-      } catch (err) {
-        alert("Gagal upload gambar: " + err);
-        return;
-      }
+      alert("Berita berhasil diperbarui!");
+      batalkanEdit();
+    } catch (err) {
+      alert("Gagal update berita: " + err);
     }
-
-    // 🔹 Update ke Firebase
-    update(ref(db, `berita/${id}`), {
-      judul: editForm.judul,
-      isi: editForm.isi,
-      fileURL,
-      updatedAt: Date.now(),
-    })
-      .then(() => {
-        alert("Berita berhasil diperbarui");
-        batalkanEdit();
-      })
-      .catch((err) => alert("Gagal update: " + err));
   };
 
-  // 🔹 Tampilan halaman
+  // 🔹 Tampilan
   return (
     <main style={{ padding: "20px" }}>
       <h1>Daftar Berita</h1>
@@ -141,7 +148,7 @@ export default function ListBeritaPage() {
                 className="edit-form"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  simpanEdit(b.id, b.fileURL);
+                  simpanEdit(b);
                 }}
               >
                 <input
@@ -160,13 +167,13 @@ export default function ListBeritaPage() {
                   required
                   style={{ width: "100%", marginBottom: "5px", padding: "5px" }}
                 />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setEditForm({ ...editForm, file: e.target.files[0] })}
-                  style={{ marginBottom: "5px" }}
-                />
-                <div>
+
+                <p><b>Ganti Gambar (opsional)</b></p>
+                <input type="file" accept="image/*" onChange={(e) => setEditForm({ ...editForm, file1: e.target.files[0] })} />
+                <input type="file" accept="image/*" onChange={(e) => setEditForm({ ...editForm, file2: e.target.files[0] })} />
+                <input type="file" accept="image/*" onChange={(e) => setEditForm({ ...editForm, file3: e.target.files[0] })} />
+
+                <div style={{ marginTop: "10px" }}>
                   <button type="submit">Simpan</button>
                   <button type="button" onClick={batalkanEdit} style={{ marginLeft: "5px" }}>
                     Batal
@@ -176,26 +183,47 @@ export default function ListBeritaPage() {
             ) : (
               <div>
                 <h2>{b.judul || "Tanpa Judul"}</h2>
-                {b.fileURL && (
-                  <img
-                    src={b.fileURL}
-                    alt={b.judul}
-                    style={{ maxWidth: "100%", height: "auto", marginTop: "10px" }}
-                  />
-                )}
-                <p>{b.isi}</p>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {/* ✅ tampilkan semua kemungkinan gambar */}
+                  {b.fileURL && (
+                    <img
+                      src={b.fileURL}
+                      alt="Gambar Utama"
+                      style={{ maxWidth: "100%", borderRadius: "8px" }}
+                    />
+                  )}
+                  {b.fileURL1 && (
+                    <img
+                      src={b.fileURL1}
+                      alt="Gambar 1"
+                      style={{ maxWidth: "100%", borderRadius: "8px" }}
+                    />
+                  )}
+                  {b.fileURL2 && (
+                    <img
+                      src={b.fileURL2}
+                      alt="Gambar 2"
+                      style={{ maxWidth: "100%", borderRadius: "8px" }}
+                    />
+                  )}
+                  {b.fileURL3 && (
+                    <img
+                      src={b.fileURL3}
+                      alt="Gambar 3"
+                      style={{ maxWidth: "100%", borderRadius: "8px" }}
+                    />
+                  )}
+                </div>
+
+                <p style={{ marginTop: "10px" }}>{b.isi}</p>
                 <small>
                   Diposting:{" "}
-                  {b.tanggal
-                    ? new Date(b.tanggal).toLocaleString("id-ID")
-                    : "Baru saja"}
+                  {b.tanggal ? new Date(b.tanggal).toLocaleString("id-ID") : "Baru saja"}
                 </small>
                 <div className="berita-actions" style={{ marginTop: "10px" }}>
                   <button onClick={() => mulaiEdit(b)}>Edit</button>
-                  <button
-                    onClick={() => hapusBerita(b.id, b.judul)}
-                    style={{ marginLeft: "5px" }}
-                  >
+                  <button onClick={() => hapusBerita(b.id, b.judul)} style={{ marginLeft: "5px" }}>
                     Hapus
                   </button>
                 </div>
