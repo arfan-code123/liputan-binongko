@@ -134,20 +134,16 @@ header {
 }
 
 .berita-card-title {
-  display: block;
-  padding: 0.8em;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #222;
-  text-decoration: none;
-  line-height: 1.4em;
-  text-align: left;
-  transition: all 0.3s ease;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* maksimal 2 baris */
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.4em;
+  color: #222;
+  padding: 0.8em;
 }
 
 .berita-card-title:hover {
@@ -320,4 +316,25 @@ footer {
 
 .share-buttons a:hover {
   opacity: 0.8;
+}
+
+/* ✅ Perbesar kartu di HP agar judul terbaca */
+@media (max-width: 480px) {
+  .berita-card {
+    width: 320px !important; /* lebih lega di HP */
+  }
+
+  .berita-card-title {
+    -webkit-line-clamp: 2 !important;
+    white-space: normal !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .berita-card-title {
+    -webkit-line-clamp: 3 !important; /* izinkan 3 baris */
+    white-space: normal !important;
+    max-height: 5em !important; /* cukup untuk 3 baris */
+    overflow: hidden;
+  }
 }
